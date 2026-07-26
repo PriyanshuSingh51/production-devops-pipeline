@@ -1,0 +1,9 @@
+replicaCount: 2
+autoscaling: { minReplicas: 2, maxReplicas: 4 }
+env:
+  - name: NODE_ENV
+    value: "staging"
+  - name: REACT_APP_API_URL
+    value: "https://api-staging.ecommerce.com"
+ingress:
+  hosts: [{ host: app-staging.ecommerce.com, paths: [{ path: /, pathType: Prefix }] }]

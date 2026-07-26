@@ -1,0 +1,2 @@
+database_username = "ecommerce_admin"
+database_password = "CHANGE_ME"   # pragma: allowlist secret — supply via TF_VAR_ or a secrets manager

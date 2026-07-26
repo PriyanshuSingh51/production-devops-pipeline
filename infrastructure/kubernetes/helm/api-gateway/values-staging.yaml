@@ -1,0 +1,4 @@
+replicaCount: 2
+autoscaling: { minReplicas: 2, maxReplicas: 4 }
+ingress:
+  hosts: [{ host: api-staging.ecommerce.com, paths: [{ path: /, pathType: Prefix }] }]

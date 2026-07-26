@@ -1,0 +1,4 @@
+replicaCount: 3
+autoscaling: { minReplicas: 2, maxReplicas: 10 }
+ingress:
+  hosts: [{ host: app.ecommerce.com, paths: [{ path: /, pathType: Prefix }] }]

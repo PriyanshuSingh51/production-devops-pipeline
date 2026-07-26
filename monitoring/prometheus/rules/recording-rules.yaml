@@ -1,0 +1,15 @@
+groups:
+  - name: recording-rules
+    interval: 30s
+    rules:
+      - record: service:http_requests:rate5m
+        expr: sum(rate(http_server_requests_seconds_count[5m])) by (service)
+
+      - record: service:http_errors:rate5m
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (service)
+
+      - record: service:latency_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, service))
+
+      - record: service:latency_p99:5m
+        expr: histogram_quantile(0.99, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, service))

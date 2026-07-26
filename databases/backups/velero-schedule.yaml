@@ -1,0 +1,12 @@
+# Velero scheduled backup: daily full cluster-state backup, 30-day retention.
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: daily-cluster-backup
+  namespace: velero
+spec:
+  schedule: "0 3 * * *"     # 03:00 UTC daily
+  template:
+    includedNamespaces: [production, monitoring]
+    storageLocation: default
+    ttl: 720h0m0s            # 30 days

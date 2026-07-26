@@ -1,0 +1,15 @@
+# Applied to every Deployment in this overlay via Kustomize patches above.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: placeholder
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: placeholder
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi

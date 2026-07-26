@@ -1,0 +1,9 @@
+replicaCount: 1
+autoscaling: { enabled: false }
+env:
+  - name: NODE_ENV
+    value: "development"
+  - name: REACT_APP_API_URL
+    value: "https://api-dev.ecommerce.com"
+ingress:
+  hosts: [{ host: app-dev.ecommerce.com, paths: [{ path: /, pathType: Prefix }] }]

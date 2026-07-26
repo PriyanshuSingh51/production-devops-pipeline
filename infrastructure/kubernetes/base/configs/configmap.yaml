@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: platform-config
+  namespace: production
+data:
+  SPRING_PROFILES_ACTIVE: "production"
+  EUREKA_SERVER: "http://eureka-server:8761/eureka"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+  ZIPKIN_BASE_URL: "http://zipkin:9411"

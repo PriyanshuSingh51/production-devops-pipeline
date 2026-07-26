@@ -1,0 +1,16 @@
+# Trivy configuration for CI scans (see .github/workflows/security-scan.yml)
+scan:
+  scanners: [vuln, secret, config]
+  skip-dirs:
+    - node_modules
+    - .terraform
+
+severity: HIGH,CRITICAL
+
+vulnerability:
+  type: [os, library]
+
+exit-code: 1     # fail the pipeline on findings at/above `severity`
+
+format: sarif
+output: trivy-results.sarif

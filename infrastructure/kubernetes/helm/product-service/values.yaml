@@ -1,0 +1,65 @@
+replicaCount: 3
+
+image:
+  repository: ghcr.io/your-org/ecommerce-platform-product-service
+  pullPolicy: Always
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 8081
+  targetPort: 8081
+
+resources:
+  requests: { cpu: 250m, memory: 512Mi }
+  limits: { cpu: 500m, memory: 1Gi }
+
+probes:
+  liveness:  { path: /actuator/health/liveness,  initialDelaySeconds: 60, periodSeconds: 10, failureThreshold: 3 }
+  readiness: { path: /actuator/health/readiness, initialDelaySeconds: 30, periodSeconds: 5,  failureThreshold: 3 }
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
+
+securityContext:
+  capabilities: { drop: [ALL] }
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8081"
+  prometheus.io/path: "/actuator/prometheus"
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  interval: 30s
+
+env:
+  - name: DB_HOST
+    valueFrom:
+      secretKeyRef: { name: db-credentials, key: PRODUCT_DB_HOST }
+  - name: DB_USER
+    valueFrom:
+      secretKeyRef: { name: db-credentials, key: PRODUCT_DB_USER }
+  - name: DB_PASSWORD
+    valueFrom:
+      secretKeyRef: { name: db-credentials, key: PRODUCT_DB_PASSWORD }
+  - name: KAFKA_BOOTSTRAP_SERVERS
+    valueFrom:
+      configMapKeyRef: { name: platform-config, key: KAFKA_BOOTSTRAP_SERVERS }

@@ -1,0 +1,11 @@
+{
+  "title": "Service Health",
+  "panels": [
+    { "title": "Availability", "type": "stat", "targets": [{ "expr": "up" }] },
+    { "title": "Error Rate", "type": "graph", "targets": [{ "expr": "service:http_errors:rate5m" }] },
+    { "title": "p95 Latency", "type": "graph", "targets": [{ "expr": "service:latency_p95:5m" }] },
+    { "title": "Throughput", "type": "graph", "targets": [{ "expr": "service:http_requests:rate5m" }] }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

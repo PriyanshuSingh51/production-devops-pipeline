@@ -1,0 +1,129 @@
+replicaCount: 3
+
+image:
+  repository: ghcr.io/your-org/ecommerce-platform-frontend
+  pullPolicy: Always
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "3000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  fsGroup: 1000
+  runAsUser: 1000
+  runAsNonRoot: true
+
+securityContext:
+  capabilities:
+    drop: [ALL]
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+  hosts:
+    - host: app.ecommerce.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts: [app.ecommerce.com]
+      secretName: ecommerce-tls
+
+resources:
+  limits: { cpu: 500m, memory: 512Mi }
+  requests: { cpu: 250m, memory: 256Mi }
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values: [frontend]
+          topologyKey: kubernetes.io/hostname
+
+env:
+  - name: NODE_ENV
+    value: "production"
+  - name: REACT_APP_API_URL
+    value: "https://api.ecommerce.com"
+  - name: REACT_APP_WS_URL
+    value: "wss://ws.ecommerce.com"
+  - name: REACT_APP_SENTRY_DSN
+    valueFrom:
+      secretKeyRef: { name: frontend-secrets, key: sentry-dsn }
+
+nginxConfig: |
+  server {
+    listen 3000;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html index.htm;
+
+    location / {
+      try_files $uri $uri/ /index.html;
+    }
+    location /metrics {
+      stub_status on;
+      access_log off;
+    }
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+      expires 1y;
+      add_header Cache-Control "public, immutable";
+    }
+  }
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  interval: 30s
+  scrapeTimeout: 10s
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+verticalPodAutoscaler:
+  enabled: true
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    minAllowed: { cpu: 100m, memory: 128Mi }
+    maxAllowed: { cpu: 1000m, memory: 1024Mi }

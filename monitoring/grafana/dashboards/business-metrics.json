@@ -1,0 +1,11 @@
+{
+  "title": "Business Metrics",
+  "panels": [
+    { "title": "Orders / Minute", "type": "graph", "targets": [{ "expr": "sum(rate(orders_created_total[1m])) * 60" }] },
+    { "title": "Revenue (last 24h)", "type": "stat", "targets": [{ "expr": "sum(increase(order_total_amount_sum[24h]))" }] },
+    { "title": "Conversion Rate", "type": "gauge", "targets": [{ "expr": "sum(rate(orders_created_total[1h])) / sum(rate(checkout_started_total[1h]))" }] },
+    { "title": "Average Order Value", "type": "stat", "targets": [{ "expr": "sum(rate(order_total_amount_sum[1h])) / sum(rate(orders_created_total[1h]))" }] }
+  ],
+  "schemaVersion": 39,
+  "version": 1
+}

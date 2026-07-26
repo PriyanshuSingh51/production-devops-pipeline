@@ -1,0 +1,48 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+
+route:
+  receiver: 'default-slack'
+  group_by: ['cluster', 'severity', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - match: { severity: critical }
+      receiver: 'critical-pagerduty'
+      continue: true
+    - match: { severity: warning }
+      receiver: 'default-slack'
+    - match: { severity: info }
+      receiver: 'default-slack'
+      repeat_interval: 12h
+
+receivers:
+  - name: 'default-slack'
+    slack_configs:
+      - channel: '#platform-alerts'
+        send_resolved: true
+        title: '{{ .CommonAnnotations.summary }}'
+        text: '{{ .CommonAnnotations.description }}'
+
+  - name: 'critical-pagerduty'
+    pagerduty_configs:
+      - service_key: '${PAGERDUTY_SERVICE_KEY}'
+        severity: critical
+    slack_configs:
+      - channel: '#platform-incidents'
+        send_resolved: true
+
+  - name: 'email-oncall'
+    email_configs:
+      - to: 'oncall@ecommerce.com'
+        from: 'alertmanager@ecommerce.com'
+        smarthost: 'smtp.ecommerce.com:587'
+        auth_username: 'alertmanager@ecommerce.com'
+        auth_password: '${SMTP_PASSWORD}'
+
+inhibit_rules:
+  - source_match: { severity: 'critical' }
+    target_match: { severity: 'warning' }
+    equal: ['alertname', 'service']

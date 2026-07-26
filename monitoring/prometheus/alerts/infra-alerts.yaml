@@ -1,0 +1,42 @@
+groups:
+  - name: infrastructure
+    rules:
+      - alert: NodeCPUHigh
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Node CPU usage high"
+          description: "Node {{ $labels.instance }} CPU usage above 85% for 10m"
+
+      - alert: NodeMemoryHigh
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels: { severity: warning }
+        annotations:
+          summary: "Node memory usage high"
+          description: "Node {{ $labels.instance }} memory usage above 85% for 10m"
+
+      - alert: PersistentVolumeFillingUp
+        expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes < 0.1
+        for: 5m
+        labels: { severity: critical }
+        annotations:
+          summary: "PV nearly full"
+          description: "PVC {{ $labels.persistentvolumeclaim }} has less than 10% free space"
+
+      - alert: KafkaConsumerLagHigh
+        expr: kafka_consumergroup_lag > 1000
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Kafka consumer lag high"
+          description: "Consumer group {{ $labels.consumergroup }} lag exceeds 1000 messages on {{ $labels.topic }}"
+
+      - alert: RDSHighConnections
+        expr: aws_rds_database_connections_average > 80
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "RDS connection count high"
+          description: "RDS instance {{ $labels.dbinstance_identifier }} connections above 80"
